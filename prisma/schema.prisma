@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  name           String?
+  password       String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  brains         Brain[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("users")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  users     User[]
+  brains    Brain[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("organizations")
+}
+
+model Brain {
+  id              String          @id @default(cuid())
+  name            String
+  organizationId  String
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  completionScore Int             @default(0)
+  sections        BrainSection[]
+  categories      ProductCategory[]
+  targetGroups    TargetGroup[]
+  documents       KnowledgeDocument[]
+  qualityChecks   QualityCheck[]
+  uploadedFiles   UploadedFile[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("brains")
+}
+
+model BrainSection {
+  id              String   @id @default(cuid())
+  brainId         String
+  brain           Brain    @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  sectionKey      String
+  status          String   @default("open") // open | partial | complete
+  completionScore Int      @default(0)
+  data            String   @default("{}") // JSON
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([brainId, sectionKey])
+  @@map("brain_sections")
+}
+
+model ProductCategory {
+  id          String   @id @default(cuid())
+  brainId     String
+  brain       Brain    @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  name        String
+  description String   @default("")
+  features    String   @default("[]") // JSON array
+  usps        String   @default("[]") // JSON array
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("product_categories")
+}
+
+model TargetGroup {
+  id          String    @id @default(cuid())
+  brainId     String
+  brain       Brain     @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  name        String
+  industry    String    @default("")
+  description String    @default("")
+  personas    Persona[]
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("target_groups")
+}
+
+model Persona {
+  id            String      @id @default(cuid())
+  targetGroupId String
+  targetGroup   TargetGroup @relation(fields: [targetGroupId], references: [id], onDelete: Cascade)
+  name          String
+  description   String      @default("")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("personas")
+}
+
+model UploadedFile {
+  id            String          @id @default(cuid())
+  brainId       String
+  brain         Brain           @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  sectionKey    String
+  originalName  String
+  mimeType      String
+  fileSize      Int
+  status        String          @default("uploaded") // uploaded | processing | completed | failed | deleted
+  tempPath      String?
+  extractedInfo ExtractedInfo?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@map("uploaded_files")
+}
+
+model ExtractedInfo {
+  id             String       @id @default(cuid())
+  uploadedFileId String       @unique
+  uploadedFile   UploadedFile @relation(fields: [uploadedFileId], references: [id], onDelete: Cascade)
+  brainId        String
+  sectionKey     String
+  data           String       @default("{}") // JSON
+  confirmed      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("extracted_info")
+}
+
+model KnowledgeDocument {
+  id        String   @id @default(cuid())
+  brainId   String
+  brain     Brain    @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  filename  String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([brainId, filename])
+  @@map("knowledge_documents")
+}
+
+model QualityCheck {
+  id          String   @id @default(cuid())
+  brainId     String
+  brain       Brain    @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  issues      String   @default("[]") // JSON
+  score       Int      @default(0)
+  completedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@map("quality_checks")
+}

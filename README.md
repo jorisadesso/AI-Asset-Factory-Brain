@@ -1,36 +1,150 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Asset Factory Brain
 
-## Getting Started
+Ein geführter Onboarding-Assistent, mit dem Unternehmen ihr individuelles Wissen für eine KI-gestützte Erstellung von Texten und Bildern strukturieren.
 
-First, run the development server:
+## Features
+
+- **10 Wissensbereiche**: Unternehmen, Produkte, Zielgruppen, Marke & Sprache, Marketing, Vertrieb, Recht, Content, Bilder, KI-Regeln
+- **Dokument-Upload**: PDF, DOCX, PPTX, TXT, MD – mit KI-Extraktion und anschließendem Löschen der Originaldatei
+- **KI-gestützte Extraktion**: Strukturierte Informationsextraktion via Anthropic Claude
+- **Completion Scoring**: Qualitätsbasierte Bewertung jedes Bereichs
+- **Markdown-Wissensbasis**: Automatische Generierung strukturierter Markdown-Dokumente
+- **Qualitätsprüfung**: KI-basierte Analyse auf Vollständigkeit und Konsistenz
+- **Auth**: Email/Passwort-Authentifizierung mit NextAuth v5
+- **Multi-Tenant**: Mandantentrennung auf Organisations- und Benutzerebene
+
+## Tech Stack
+
+| Layer | Technologie |
+|-------|------------|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript (strict) |
+| Styling | Tailwind CSS v4 |
+| Database | SQLite (dev) via Prisma v7 + better-sqlite3 |
+| Auth | NextAuth v5 (Credentials) |
+| AI | Anthropic Claude API |
+| Validation | Zod v4 |
+| Testing | Jest + ts-jest |
+
+## Setup
+
+### 1. Abhängigkeiten installieren
+
+```bash
+npm install
+```
+
+### 2. Umgebungsvariablen konfigurieren
+
+```bash
+cp .env.example .env
+```
+
+Folgende Variablen anpassen:
+
+```env
+DATABASE_URL="file:./prisma/dev.db"
+NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
+NEXTAUTH_URL="http://localhost:3000"
+ANTHROPIC_API_KEY="sk-ant-..."
+MAX_FILE_SIZE_MB=10
+UPLOAD_DIR="/tmp/ai-asset-factory-uploads"
+```
+
+### 3. Datenbank initialisieren
+
+```bash
+npx prisma migrate dev
+npx prisma generate
+```
+
+### 4. Entwicklungsserver starten
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Die Anwendung läuft auf [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Verfügbare Skripte
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev          # Entwicklungsserver
+npm run build        # Produktions-Build
+npm run start        # Produktionsserver
+npm run test         # Tests ausführen
+npm run typecheck    # TypeScript-Prüfung
+npm run lint         # Linting
+npm run db:migrate   # Datenbankmigrationen
+npm run db:studio    # Prisma Studio
+```
 
-## Learn More
+## Architektur
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── auth/          # Registrierung & NextAuth handler
+│   │   ├── brain/         # Brain, Sections, Categories, Target Groups
+│   │   │   ├── categories/
+│   │   │   ├── knowledge/
+│   │   │   ├── quality-check/
+│   │   │   ├── section/
+│   │   │   └── target-groups/
+│   │   └── upload/        # Datei-Upload & Bestätigung
+│   ├── brain/[sectionKey] # Wizard-Bereiche
+│   ├── dashboard/         # Hauptübersicht
+│   ├── knowledge/         # Wissensbasis-Anzeige
+│   ├── login/
+│   ├── quality-check/
+│   └── register/
+├── components/
+│   ├── layout/            # AppShell, Sidebar
+│   ├── ui/                # Basiskomponenten (Button, Input, etc.)
+│   ├── upload/            # DocumentUploader
+│   └── wizard/            # Sektionsformulare
+├── hooks/                 # useBrain, useSectionData
+├── lib/
+│   ├── ai/                # Anthropic-Service (Extraktion, Qualitätsprüfung, Markdown)
+│   ├── auth/              # NextAuth-Konfiguration
+│   ├── completion/        # Completion Scoring
+│   ├── db/                # Prisma-Client
+│   ├── document/          # Dokument-Verarbeitung
+│   └── knowledge/         # Markdown-Generierung
+├── schemas/               # Zod-Schemas pro Bereich
+└── types/                 # TypeScript-Typen
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Dokument-Upload-Flow
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+UPLOAD → Validierung → Temporär speichern → Text extrahieren
+→ KI-Analyse → Strukturierte Daten → Nutzer prüft/korrigiert
+→ Wissensbasis aktualisieren → Originaldatei löschen
+```
 
-## Deploy on Vercel
+Originaldateien werden **niemals dauerhaft gespeichert**.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### KI-Service-Schnittstelle
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```typescript
+AIService
+├── extractFromDocument(text, sectionKey) → ExtractionResult
+├── runQualityCheck(brainData) → QualityIssue[]
+└── generateMarkdownContent(sectionKey, data) → string
+```
+
+## Sicherheit
+
+- API-Keys ausschließlich über Umgebungsvariablen
+- Uploads werden validiert (Dateityp, Größe)
+- Temporäre Dateien werden nach Verarbeitung gelöscht
+- Mandantentrennung: Nutzer sehen nur ihre eigenen Daten
+- Passwörter werden mit bcrypt (12 Runden) gehasht
+
+## Erweiterung
+
+- **Datenbank**: SQLite durch PostgreSQL ersetzbar (nur `DATABASE_URL` und Provider in `prisma/schema.prisma` ändern)
+- **AI-Provider**: Anthropic durch anderen LLM-Provider ersetzbar (`src/lib/ai/service.ts`)
+- **Authentifizierung**: weitere OAuth-Provider via NextAuth konfigurierbar

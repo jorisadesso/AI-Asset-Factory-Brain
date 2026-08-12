@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  name           String?
+  passwordHash   String
+  role           String         @default("OWNER")
+  organizationId String?
+  organization   Organization?  @relation(fields: [organizationId], references: [id])
+  brains         Brain[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model Organization {
+  id          String       @id @default(cuid())
+  name        String
+  users       User[]
+  brains      Brain[]
+  invitations Invitation[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Invitation {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String?
+  token          String       @unique @default(cuid())
+  role           String       @default("EDITOR")
+  expiresAt      DateTime
+  usedAt         DateTime?
+  createdById    String
+  createdAt      DateTime     @default(now())
+}
+
+model Brain {
+  id              String             @id @default(cuid())
+  name            String             @default("Mein AI Asset Factory Brain")
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId  String?
+  organization    Organization?      @relation(fields: [organizationId], references: [id])
+  sections        BrainSection[]
+  productCategories ProductCategory[]
+  targetGroups    TargetGroup[]
+  knowledgeDocs   KnowledgeDocument[]
+  qualityChecks   QualityCheck[]
+  completionScore Float              @default(0)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+}
+
+model BrainSection {
+  id              String        @id @default(cuid())
+  brainId         String
+  brain           Brain         @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  sectionType     String
+  completionScore Float         @default(0)
+  status          String        @default("OPEN")
+  answers         Answer[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([brainId, sectionType])
+}
+
+model Answer {
+  id          String       @id @default(cuid())
+  sectionId   String
+  section     BrainSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  questionKey String
+  value       String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([sectionId, questionKey])
+}
+
+model ProductCategory {
+  id          String   @id @default(cuid())
+  brainId     String
+  brain       Brain    @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  features    String   @default("[]")
+  usps        String   @default("[]")
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TargetGroup {
+  id          String    @id @default(cuid())
+  brainId     String
+  brain       Brain     @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  name        String
+  industry    String?
+  description String?
+  personas    Persona[]
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Persona {
+  id            String      @id @default(cuid())
+  targetGroupId String
+  targetGroup   TargetGroup @relation(fields: [targetGroupId], references: [id], onDelete: Cascade)
+  description   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model KnowledgeDocument {
+  id          String   @id @default(cuid())
+  brainId     String
+  brain       Brain    @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  fileName    String
+  content     String
+  sectionType String
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([brainId, sectionType])
+}
+
+model QualityCheck {
+  id        String   @id @default(cuid())
+  brainId   String
+  brain     Brain    @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  status    String   @default("PENDING")
+  findings  String   @default("[]")
+  score     Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  brainId   String?
+  userId    String?
+  action    String
+  details   String   @default("{}")
+  createdAt DateTime @default(now())
+}

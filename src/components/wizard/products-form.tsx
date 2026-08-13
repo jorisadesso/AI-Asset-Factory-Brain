@@ -172,12 +172,12 @@ function CategoryEditor({
   };
 
   return (
-    <div className="p-4 space-y-4 bg-white">
+    <div className="p-4 space-y-6 bg-white">
       <FieldGroup label="Kategoriename" required>
         <Input value={data.name} onChange={(e) => set("name", e.target.value)} placeholder="z. B. Marketing Automation" />
         <ExampleHint examples={["Marketing Automation", "CRM-Beratung"]} />
       </FieldGroup>
-      <FieldGroup label="Beschreibung">
+      <FieldGroup label="Kurzbeschreibung">
         <Textarea value={data.description} onChange={(e) => set("description", e.target.value)} placeholder="Kurze Beschreibung der Kategorie..." rows={3} />
         <ExampleHint examples={["Unsere Marketing-Automation-Lösungen automatisieren wiederkehrende Marketingprozesse."]} />
       </FieldGroup>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { TagInput } from "@/components/ui/tag-input";
@@ -15,7 +16,7 @@ interface FieldConfig {
   key: string;
   label: string;
   description?: string;
-  type: "text" | "tags";
+  type: "text" | "tags" | "input";
   placeholder: string;
   examples: string[];
   rows?: number;
@@ -75,6 +76,12 @@ export function GenericSectionForm({ sectionKey, fields, initialData, onSave }: 
             <TagInput
               value={(data[field.key] as string[]) || []}
               onChange={(v) => set(field.key, v)}
+              placeholder={field.placeholder}
+            />
+          ) : field.type === "input" ? (
+            <Input
+              value={(data[field.key] as string) || ""}
+              onChange={(e) => set(field.key, e.target.value)}
               placeholder={field.placeholder}
             />
           ) : (

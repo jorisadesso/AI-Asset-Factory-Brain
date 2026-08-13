@@ -10,13 +10,9 @@ import { SECTIONS } from "@/lib/sections";
 import { SectionKey, SectionStatus } from "@/types";
 import Link from "next/link";
 import {
-  Brain, Building2, Package, Users, MessageSquare, BarChart2,
-  TrendingUp, Shield, FileText, Image, ChevronRight, Sparkles,
+  Brain, FileText, ChevronRight, Sparkles,
 } from "lucide-react";
-
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Building2, Package, Users, MessageSquare, BarChart2, TrendingUp, Shield, FileText, Image, Brain,
-};
+import { SECTION_ICON_MAP } from "@/lib/icon-map";
 
 const STATUS_LABEL: Record<SectionStatus, string> = {
   complete: "Vollständig",
@@ -91,7 +87,7 @@ export function DashboardClient() {
         {/* Sections grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {SECTIONS.map((section, index) => {
-            const Icon = ICON_MAP[section.icon] || Brain;
+            const Icon = SECTION_ICON_MAP[section.icon] || Brain;
             const status = sectionStatuses[section.key as SectionKey] || "open";
             const score = statusMap[section.key]?.score || 0;
 

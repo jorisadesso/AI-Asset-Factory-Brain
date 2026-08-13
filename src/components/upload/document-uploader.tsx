@@ -64,9 +64,24 @@ export function DocumentUploader({ sectionKey, onConfirm, onCancel }: DocumentUp
     [sectionKey]
   );
 
+  const maxSizeMB = parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE || "10");
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     maxFiles: 1,
+    maxSize: maxSizeMB * 1024 * 1024,
+    onDropRejected: (fileRejections) => {
+      const rejection = fileRejections[0];
+      const code = rejection?.errors[0]?.code;
+      if (code === "file-too-large") {
+        setError(`Datei zu groß. Maximum: ${maxSizeMB} MB`);
+      } else if (code === "file-invalid-type") {
+        setError("Dateityp nicht unterstützt. Erlaubt: PDF, DOCX, PPTX, TXT, MD");
+      } else {
+        setError("Datei konnte nicht hochgeladen werden.");
+      }
+      setState("error");
+    },
     accept: {
       "application/pdf": [".pdf"],
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [".docx"],

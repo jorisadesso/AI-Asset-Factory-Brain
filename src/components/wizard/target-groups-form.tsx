@@ -160,7 +160,7 @@ function GroupEditor({
   };
 
   return (
-    <div className="p-4 space-y-4 bg-white">
+    <div className="p-4 space-y-6 bg-white">
       <FieldGroup label="Zielgruppe" required>
         <Input value={data.name} onChange={(e) => set("name", e.target.value)} placeholder="z. B. Marketing Manager in mittelständischen Unternehmen" />
         <ExampleHint examples={["Marketing Manager in mittelständischen Unternehmen", "Geschäftsführer von Industrieunternehmen"]} />
@@ -180,7 +180,9 @@ function GroupEditor({
             <div key={i} className="flex gap-2 items-start rounded-lg border border-slate-100 p-3">
               <div className="flex-1 space-y-2">
                 <Input value={p.name} onChange={(e) => updatePersona(i, "name", e.target.value)} placeholder="Name, z. B. Julia, 38, Marketing Managerin" />
+                <ExampleHint examples={["Julia, 38, Marketing Managerin", "Thomas, 52, Geschäftsführer"]} />
                 <Textarea value={p.description} onChange={(e) => updatePersona(i, "description", e.target.value)} placeholder="Kurzbeschreibung..." rows={2} />
+                <ExampleHint examples={["Verantwortlich für Leadgenerierung, sucht zeitsparende Lösungen."]} />
               </div>
               <button onClick={() => removePersona(i)} className="text-slate-400 hover:text-red-500 mt-1">
                 <Trash2 className="h-4 w-4" />
@@ -197,7 +199,7 @@ function GroupEditor({
 
       {!onChange && (
         <Button
-          onClick={async () => { setSaving(true); try { await onSave(data); } catch { toast("Fehler.", "error"); } finally { setSaving(false); } }}
+          onClick={async () => { setSaving(true); try { await onSave(data); } catch { toast("Speichern fehlgeschlagen.", "error"); } finally { setSaving(false); } }}
           loading={saving}
           size="sm"
         >

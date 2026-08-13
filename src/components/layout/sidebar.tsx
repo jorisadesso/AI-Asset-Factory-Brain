@@ -3,19 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Brain, Building2, Package, Users, MessageSquare, BarChart2,
-  TrendingUp, Shield, FileText, Image, LayoutDashboard, LogOut,
+  Brain, LayoutDashboard, LogOut,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { SECTIONS } from "@/lib/sections";
+import { SECTION_ICON_MAP } from "@/lib/icon-map";
 import { SectionStatus } from "@/types";
 import { SectionStatusIcon } from "@/components/wizard/section-status-icon";
 import { Progress } from "@/components/ui/progress";
-
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Building2, Package, Users, MessageSquare, BarChart2, TrendingUp, Shield, FileText, Image, Brain,
-};
 
 interface SidebarProps {
   completionScore: number;
@@ -68,7 +64,7 @@ export function Sidebar({ completionScore, sectionStatuses }: SidebarProps) {
         </div>
 
         {SECTIONS.map((section) => {
-          const Icon = ICON_MAP[section.icon] || Brain;
+          const Icon = SECTION_ICON_MAP[section.icon] || Brain;
           const status = sectionStatuses[section.key] || "open";
           const isActive = pathname === `/brain/${section.key}`;
 

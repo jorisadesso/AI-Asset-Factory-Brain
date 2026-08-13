@@ -4,7 +4,7 @@ interface FieldConfig {
   key: string;
   label: string;
   description?: string;
-  type: "text" | "tags";
+  type: "text" | "tags" | "input";
   placeholder: string;
   examples: string[];
   rows?: number;
@@ -34,10 +34,9 @@ export const SECTION_FIELDS: Partial<Record<SectionKey, FieldConfig[]>> = {
       key: "salutation",
       label: "Anrede",
       description: "Welche Anrede soll verwendet werden?",
-      type: "text",
+      type: "input",
       placeholder: "Du oder Sie",
       examples: ["Du", "Sie"],
-      rows: 1,
     },
     {
       key: "preferredTerms",

@@ -120,15 +120,18 @@ export function CrossSectionModal({ crossSections, onClose, onApplied, checkedSe
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  {filledAnswers.map(([key, value]) => {
+                  {filledAnswers.slice(0, 3).map(([key, value]) => {
                     const question = sectionConfig?.questions.find((q) => q.key === key);
                     return (
                       <div key={key}>
                         <p className="text-xs font-medium text-gray-500">{question?.label ?? key}</p>
-                        <p className="text-xs text-gray-700 mt-0.5 line-clamp-2">{value}</p>
+                        <p className="text-xs text-gray-700 mt-0.5 line-clamp-1">{value}</p>
                       </div>
                     );
                   })}
+                  {filledAnswers.length > 3 && (
+                    <p className="text-xs text-gray-400">+{filledAnswers.length - 3} weitere Felder</p>
+                  )}
                 </div>
               </button>
             );

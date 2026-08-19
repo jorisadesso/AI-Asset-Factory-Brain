@@ -74,7 +74,10 @@ export function CrossSectionModal({ crossSections, onClose, onApplied, checkedSe
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50">
+      {/* Backdrop — separate layer so blur covers full screen */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="relative h-full flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-start justify-between p-5 border-b border-gray-100">
@@ -181,6 +184,7 @@ export function CrossSectionModal({ crossSections, onClose, onApplied, checkedSe
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

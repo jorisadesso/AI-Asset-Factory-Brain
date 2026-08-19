@@ -34,13 +34,16 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy built app
-COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # Copy Prisma schema and full node_modules for migrate CLI + generated client
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=deps /app/node_modules ./node_modules
+
+# Regenerate Prisma client for the correct Linux platform
+RUN node node_modules/prisma/build/index.js generate
 
 # Copy startup script
 COPY --chown=nextjs:nodejs scripts/start.sh ./start.sh

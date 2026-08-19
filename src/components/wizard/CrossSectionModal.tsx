@@ -75,7 +75,7 @@ export function CrossSectionModal({ crossSections, onClose, onApplied, checkedSe
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-start justify-between p-5 border-b border-gray-100">
           <div>
@@ -118,7 +118,7 @@ export function CrossSectionModal({ crossSections, onClose, onApplied, checkedSe
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  {Object.entries(entry.answers).map(([key, value]) => {
+                  {Object.entries(entry.answers).filter(([, value]) => value?.trim()).map(([key, value]) => {
                     const question = sectionConfig?.questions.find((q) => q.key === key);
                     return (
                       <div key={key}>

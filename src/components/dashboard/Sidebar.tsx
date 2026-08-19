@@ -186,7 +186,7 @@ export function Sidebar({ sections, overallScore, isCollapsed }: SidebarProps) {
       <div className="border-t border-[var(--border-subtle)] py-2">
         <Link
           href="/knowledge"
-          className={`group flex items-center gap-2.5 px-3 py-1 transition-colors ${knowledgeActive ? rowActive : rowIdle}`}
+          className={`group flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors ${knowledgeActive ? rowActive : rowIdle}`}
         >
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition ${knowledgeActive ? iconBox.active : iconBox.idle}`}>
             <BookOpen className="w-4 h-4" />

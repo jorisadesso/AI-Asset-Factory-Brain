@@ -97,6 +97,8 @@ export function CrossSectionModal({ crossSections, onClose, onApplied, checkedSe
           {crossSections.map((entry) => {
             const sectionConfig = SECTION_CONFIGS.find((s) => s.type === entry.sectionType);
             const isSelected = selected.has(entry.sectionType);
+            const filledAnswers = Object.entries(entry.answers).filter(([, value]) => value?.trim());
+            if (filledAnswers.length === 0) return null;
             return (
               <button
                 key={entry.sectionType}
@@ -118,7 +120,7 @@ export function CrossSectionModal({ crossSections, onClose, onApplied, checkedSe
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  {Object.entries(entry.answers).filter(([, value]) => value?.trim()).map(([key, value]) => {
+                  {filledAnswers.map(([key, value]) => {
                     const question = sectionConfig?.questions.find((q) => q.key === key);
                     return (
                       <div key={key}>

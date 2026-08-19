@@ -38,10 +38,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy Prisma schema and generated client for runtime migrations
+# Copy Prisma schema and full node_modules for migrate CLI + generated client
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=deps /app/node_modules ./node_modules
 
 # Copy startup script
 COPY --chown=nextjs:nodejs scripts/start.sh ./start.sh
@@ -49,6 +48,8 @@ RUN chmod +x ./start.sh
 
 # Data directory for SQLite (mount a volume here)
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
+# Uploads directory (mount a volume here)
+RUN mkdir -p /app/storage/uploads && chown nextjs:nodejs /app/storage/uploads
 
 USER nextjs
 

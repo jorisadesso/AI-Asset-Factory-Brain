@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 import { getBrainForUser } from "@/lib/db/brain";
+import { checkRateLimit } from "@/lib/api/rateLimit";
+import { safeParseArray } from "@/lib/db/parse";
 import { z } from "zod";
 
 const productSchema = z.object({
@@ -12,19 +14,23 @@ const productSchema = z.object({
   usps: z.array(z.string()),
 });
 
-async function getBrain(userId: string) {
-  return getBrainForUser(userId);
-}
-
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
+
+  const rl = checkRateLimit(`products:${session.user.id}`, 30);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Zu viele Anfragen. Bitte warte kurz." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
 
   const body = await req.json() as unknown;
   const parsed = productSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Ungültige Daten" }, { status: 400 });
 
-  const brain = await getBrain(session.user.id);
+  const brain = await getBrainForUser(session.user.id);
   if (!brain) return NextResponse.json({ error: "Brain nicht gefunden" }, { status: 404 });
 
   const count = await prisma.productCategory.count({ where: { brainId: brain.id } });
@@ -53,7 +59,7 @@ export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
 
-  const brain = await getBrain(session.user.id);
+  const brain = await getBrainForUser(session.user.id);
   if (!brain) return NextResponse.json([]);
 
   const categories = await prisma.productCategory.findMany({
@@ -64,8 +70,8 @@ export async function GET() {
   return NextResponse.json(
     categories.map((c) => ({
       ...c,
-      features: JSON.parse(c.features) as string[],
-      usps: JSON.parse(c.usps) as string[],
+      features: safeParseArray(c.features),
+      usps: safeParseArray(c.usps),
     }))
   );
 }
@@ -81,8 +87,8 @@ async function updateProductMarkdown(brainId: string) {
     categories.map((c) => ({
       name: c.name,
       description: c.description ?? undefined,
-      features: JSON.parse(c.features) as string[],
-      usps: JSON.parse(c.usps) as string[],
+      features: safeParseArray(c.features),
+      usps: safeParseArray(c.usps),
     }))
   );
 

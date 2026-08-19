@@ -10,7 +10,7 @@ export async function GET() {
     return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
   }
 
-  const where = await getBrainWhere(session.user.id);
+  const where = getBrainWhere(session.user.id);
   const brain = await prisma.brain.findFirst({
     where,
     include: { knowledgeDocs: { orderBy: { updatedAt: "desc" } } },

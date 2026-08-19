@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { getBrainWhere } from "@/lib/db/brain";
+import { checkRateLimit } from "@/lib/api/rateLimit";
 import { z } from "zod";
 import { generateProductCategoriesMarkdown } from "@/lib/knowledge/generator";
+import { safeParseArray } from "@/lib/db/parse";
 
 const productSchema = z.object({
   name: z.string().min(1).max(200),
@@ -13,7 +16,7 @@ const productSchema = z.object({
 });
 
 async function ensureOwnership(userId: string, productId: string) {
-  const brain = await prisma.brain.findFirst({ where: { userId } });
+  const brain = await prisma.brain.findFirst({ where: getBrainWhere(userId) });
   if (!brain) return null;
   const product = await prisma.productCategory.findFirst({
     where: { id: productId, brainId: brain.id },
@@ -27,6 +30,14 @@ export async function PUT(
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
+
+  const rl = checkRateLimit(`products:${session.user.id}`, 30);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Zu viele Anfragen. Bitte warte kurz." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
 
   const { id } = await params;
   const brain = await ensureOwnership(session.user.id, id);
@@ -62,6 +73,14 @@ export async function DELETE(
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
 
+  const rl = checkRateLimit(`products:${session.user.id}`, 30);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Zu viele Anfragen. Bitte warte kurz." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
+
   const { id } = await params;
   const brain = await ensureOwnership(session.user.id, id);
   if (!brain) return NextResponse.json({ error: "Nicht gefunden" }, { status: 404 });
@@ -81,8 +100,8 @@ async function regenerateMarkdown(brainId: string) {
     categories.map((c) => ({
       name: c.name,
       description: c.description ?? undefined,
-      features: JSON.parse(c.features) as string[],
-      usps: JSON.parse(c.usps) as string[],
+      features: safeParseArray(c.features),
+      usps: safeParseArray(c.usps),
     }))
   );
   await prisma.knowledgeDocument.upsert({

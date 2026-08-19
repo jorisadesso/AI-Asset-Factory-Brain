@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { TargetGroup } from "@/types";
+import { Users, X, Upload, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { CrossSectionModal, type CrossSectionEntry } from "@/components/wizard/CrossSectionModal";
 
 type GroupForm = {
   name: string;
@@ -19,6 +21,11 @@ export function TargetGroupsSection() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<GroupForm>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [uploadState, setUploadState] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [crossSections, setCrossSections] = useState<CrossSectionEntry[] | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/brain/target-groups")
@@ -77,6 +84,7 @@ export function TargetGroupsSection() {
       setShowForm(false);
       setForm(EMPTY_FORM);
       setEditId(null);
+      window.dispatchEvent(new CustomEvent("brain-updated"));
     } catch {
       // Handle
     } finally {
@@ -85,9 +93,39 @@ export function TargetGroupsSection() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Zielgruppe wirklich löschen?")) return;
     await fetch(`/api/brain/target-groups/${id}`, { method: "DELETE" });
     setGroups((prev) => prev.filter((g) => g.id !== id));
+    setDeleteConfirmId(null);
+    window.dispatchEvent(new CustomEvent("brain-updated"));
+  }
+
+  async function handleUpload(file: File) {
+    setUploadState("loading");
+    setUploadMessage("");
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("sectionType", "TARGET_GROUPS");
+    formData.append("questions", JSON.stringify([]));
+    formData.append("crossCheck", "true");
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json() as { success?: boolean; error?: string; crossSections?: CrossSectionEntry[] };
+      if (!res.ok || !data.success) {
+        setUploadState("error");
+        setUploadMessage(data.error ?? "Fehler beim Verarbeiten der Datei.");
+      } else {
+        setUploadState("done");
+        setUploadMessage("Dokument gespeichert. Es steht nun in der Dokumentenbibliothek zur Verfügung.");
+        window.dispatchEvent(new CustomEvent("brain-updated"));
+        if (data.crossSections && data.crossSections.length > 0) {
+          setCrossSections(data.crossSections);
+        }
+        setTimeout(() => setUploadState("idle"), 5000);
+      }
+    } catch {
+      setUploadState("error");
+      setUploadMessage("Netzwerkfehler beim Upload.");
+    }
   }
 
   function addPersona() {
@@ -130,19 +168,33 @@ export function TargetGroupsSection() {
                     <div className="text-xs text-gray-500">{group.industry}</div>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <button
                     onClick={() => startEdit(group)}
-                    className="text-xs text-blue-600 hover:text-blue-700 px-2 py-1 rounded hover:bg-blue-50 transition"
+                    className="text-xs text-[#1B7FD4] hover:text-[#1569B8] px-2 py-1 rounded hover:bg-[#EFF6FF] transition"
                   >
                     Bearbeiten
                   </button>
-                  <button
-                    onClick={() => handleDelete(group.id)}
-                    className="text-xs text-red-500 hover:text-red-600 px-2 py-1 rounded hover:bg-red-50 transition"
-                  >
-                    Löschen
-                  </button>
+                  {deleteConfirmId === group.id ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs">
+                      <span className="text-gray-500">Wirklich löschen?</span>
+                      <button
+                        onClick={() => void handleDelete(group.id)}
+                        className="text-red-500 hover:text-red-600 font-medium transition"
+                      >Ja</button>
+                      <button
+                        onClick={() => setDeleteConfirmId(null)}
+                        className="text-gray-400 hover:text-gray-600 transition"
+                      >Nein</button>
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => setDeleteConfirmId(group.id)}
+                      className="text-xs text-red-500 hover:text-red-600 px-2 py-1 rounded hover:bg-red-50 transition"
+                    >
+                      Löschen
+                    </button>
+                  )}
                 </div>
               </div>
               {group.description && (
@@ -166,7 +218,7 @@ export function TargetGroupsSection() {
       )}
 
       {showForm && (
-        <div className="bg-white rounded-2xl border border-blue-200 p-6 space-y-4">
+        <div className="bg-white rounded-2xl border border-[#93C5FD] p-6 space-y-4">
           <h3 className="font-semibold text-gray-900">
             {editId ? "Zielgruppe bearbeiten" : "Neue Zielgruppe"}
           </h3>
@@ -178,7 +230,7 @@ export function TargetGroupsSection() {
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               placeholder="z.B. Marketing Manager im Mittelstand"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1B7FD4] text-sm"
             />
           </div>
 
@@ -189,7 +241,7 @@ export function TargetGroupsSection() {
               value={form.industry}
               onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
               placeholder="z.B. Maschinenbau, Automotive und Logistik"
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1B7FD4] text-sm"
             />
           </div>
 
@@ -200,7 +252,7 @@ export function TargetGroupsSection() {
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               placeholder="Wen beschreiben Sie? Welche Bedürfnisse hat diese Zielgruppe?"
               rows={3}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1B7FD4] text-sm resize-none"
             />
           </div>
 
@@ -214,21 +266,21 @@ export function TargetGroupsSection() {
                     value={persona}
                     onChange={(e) => updatePersona(i, e.target.value)}
                     placeholder={`z.B. Julia, 38, Marketing Managerin, verantwortlich für Leadgenerierung`}
-                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1B7FD4] text-sm"
                   />
                   {form.personas.length > 1 && (
                     <button
                       onClick={() => removePersona(i)}
-                      className="text-gray-400 hover:text-red-500 transition px-2"
+                      className="text-gray-400 hover:text-red-500 transition p-1 rounded"
                     >
-                      ✕
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
               ))}
               <button
                 onClick={addPersona}
-                className="text-sm text-blue-600 hover:text-blue-700 transition"
+                className="text-sm text-[#1B7FD4] hover:text-[#1569B8] transition"
               >
                 + Persona hinzufügen
               </button>
@@ -239,7 +291,7 @@ export function TargetGroupsSection() {
             <button
               onClick={handleSave}
               disabled={!form.name.trim() || saving}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-60"
+              className="bg-[#1B7FD4] hover:bg-[#1569B8] text-white text-sm font-medium px-5 py-2 rounded-lg transition disabled:opacity-60"
             >
               {saving ? "Wird gespeichert..." : "Speichern"}
             </button>
@@ -253,20 +305,73 @@ export function TargetGroupsSection() {
         </div>
       )}
 
-      {!showForm && (
+      {!showForm && groups.length > 0 && (
         <button
           onClick={startNew}
-          className="w-full bg-white border-2 border-dashed border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-500 hover:text-blue-600 text-sm font-medium py-4 rounded-xl transition"
+          className="w-full bg-white border-2 border-dashed border-gray-200 hover:border-[#93C5FD] hover:bg-[#EFF6FF] text-gray-500 hover:text-[#1B7FD4] text-sm font-medium py-4 rounded-xl transition"
         >
           + Zielgruppe hinzufügen
         </button>
       )}
 
       {groups.length === 0 && !showForm && (
-        <div className="text-center text-sm text-gray-400 py-4">
-          Noch keine Zielgruppen erfasst. Fügen Sie die erste Zielgruppe hinzu.
+        <div className="flex flex-col items-center gap-3 py-10 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center">
+            <Users className="w-6 h-6 text-gray-400" />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700">Noch keine Zielgruppen</div>
+            <div className="text-xs text-gray-400 mt-0.5">Fügen Sie Ihre erste Zielgruppe und Personas hinzu.</div>
+          </div>
+          <button
+            onClick={startNew}
+            className="mt-1 text-sm font-medium text-[#1B7FD4] hover:text-[#1569B8] transition"
+          >
+            + Erste Zielgruppe anlegen
+          </button>
         </div>
       )}
+
+      {crossSections && (
+        <CrossSectionModal
+          crossSections={crossSections}
+          onClose={() => setCrossSections(null)}
+          onApplied={() => setCrossSections(null)}
+        />
+      )}
+
+      {/* File upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.csv,.txt,.md"
+        className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void handleUpload(f); }}
+      />
+      <div
+        className="border border-dashed border-gray-200 rounded-xl px-4 py-4 flex items-center justify-between gap-4 bg-gray-50 hover:border-[#93C5FD] hover:bg-[#EFF6FF] transition cursor-pointer"
+        onClick={() => uploadState === "idle" && fileInputRef.current?.click()}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) void handleUpload(f); }}
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          {uploadState === "loading" && <Loader2 className="w-4 h-4 text-[#1B7FD4] shrink-0 animate-spin" />}
+          {uploadState === "done"    && <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />}
+          {uploadState === "error"   && <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />}
+          {uploadState === "idle"    && <Upload className="w-4 h-4 text-gray-400 shrink-0" />}
+          <span className="text-sm text-gray-500 truncate">
+            {uploadState === "idle"    && "Dokument anhängen (PDF, DOCX, PPTX …)"}
+            {uploadState === "loading" && "Dokument wird verarbeitet …"}
+            {uploadState === "done"    && (uploadMessage || "Gespeichert.")}
+            {uploadState === "error"   && (uploadMessage || "Fehler beim Upload.")}
+          </span>
+        </div>
+        {uploadState === "idle" && (
+          <span className="shrink-0 text-xs font-medium text-[#1B7FD4] bg-[#EFF6FF] px-3 py-1.5 rounded-lg whitespace-nowrap">
+            Datei wählen
+          </span>
+        )}
+      </div>
     </div>
   );
 }

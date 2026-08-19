@@ -10,11 +10,12 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o}
-      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-10}
-      UPLOAD_DIR: /tmp/ai-asset-factory-uploads
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-100}
     volumes:
       - db_data:/app/data
+      - uploads_data:/app/storage/uploads
     restart: unless-stopped
 
 volumes:
   db_data:
+  uploads_data:

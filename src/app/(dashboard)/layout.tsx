@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { DashboardNav } from "@/components/dashboard/DashboardNav";
 import { SidebarWrapper } from "@/components/dashboard/SidebarWrapper";
+import { ChatWidget } from "@/components/ChatWidget";
 
 export default async function DashboardLayout({
   children,
@@ -13,20 +14,21 @@ export default async function DashboardLayout({
   if (!session) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="h-screen bg-gray-50 dark:bg-[#0f172a] flex flex-col overflow-hidden">
       <DashboardNav userName={session.user?.name ?? session.user?.email ?? "Nutzer"} />
       <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar — hidden on mobile */}
-        <div className="hidden md:flex flex-col w-64 shrink-0 border-r border-gray-200 bg-white overflow-y-auto sticky top-16 h-[calc(100vh-4rem)]">
+        {/* Left sidebar — hidden on mobile, never scrolls the window */}
+        <div className="hidden md:flex shrink-0">
           <SidebarWrapper />
         </div>
-        {/* Main content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Main content scrolls independently */}
+        <main className="flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+          <div className="px-6 lg:px-10 py-8">
             {children}
           </div>
         </main>
       </div>
+      <ChatWidget />
     </div>
   );
 }

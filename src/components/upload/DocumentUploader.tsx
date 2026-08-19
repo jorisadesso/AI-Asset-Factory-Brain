@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import type { ExtractedInfo, SectionType } from "@/types";
+import { Paperclip, XCircle, CheckCircle2 } from "lucide-react";
 
 interface DocumentUploaderProps {
   sectionType: SectionType;
@@ -87,7 +88,7 @@ export function DocumentUploader({
           ref={inputRef}
           type="file"
           className="hidden"
-          accept=".pdf,.docx,.pptx,.txt,.md"
+          accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls,.csv,.txt,.md,.html,.htm,.rtf,.odt,.odp,.ods"
           onChange={handleFileChange}
           disabled={uploading}
         />
@@ -99,25 +100,27 @@ export function DocumentUploader({
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <div className="text-3xl">📎</div>
+            <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] flex items-center justify-center mb-1">
+              <Paperclip className="w-5 h-5 text-[#1B7FD4]" />
+            </div>
             <p className="text-sm font-medium text-gray-700">
               Datei hierher ziehen oder{" "}
-              <span className="text-blue-600">auswählen</span>
+              <span className="text-[#1B7FD4]">auswählen</span>
             </p>
-            <p className="text-xs text-gray-400">PDF, DOCX, PPTX, TXT, Markdown · max. 10 MB</p>
+            <p className="text-xs text-gray-400">PDF, DOCX, PPTX, TXT, Markdown · max. 100 MB</p>
           </div>
         )}
       </div>
 
       {error && (
-        <div className="mt-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-4 py-2.5">
-          ❌ {error}
+        <div className="mt-3 flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-4 py-2.5">
+          <XCircle className="w-4 h-4 shrink-0" /> {error}
         </div>
       )}
 
       {status && !uploading && (
-        <div className="mt-3 text-sm text-green-700 bg-green-50 border border-green-100 rounded-lg px-4 py-2.5">
-          ✓ {status}
+        <div className="mt-3 flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-100 rounded-lg px-4 py-2.5">
+          <CheckCircle2 className="w-4 h-4 shrink-0" /> {status}
         </div>
       )}
     </div>

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
+import { getBrainWhere } from "@/lib/db/brain";
+import { checkRateLimit } from "@/lib/api/rateLimit";
 import { z } from "zod";
 import { generateTargetGroupsMarkdown } from "@/lib/knowledge/generator";
 
@@ -13,7 +15,7 @@ const groupSchema = z.object({
 });
 
 async function ensureOwnership(userId: string, groupId: string) {
-  const brain = await prisma.brain.findFirst({ where: { userId } });
+  const brain = await prisma.brain.findFirst({ where: getBrainWhere(userId) });
   if (!brain) return null;
   const group = await prisma.targetGroup.findFirst({
     where: { id: groupId, brainId: brain.id },
@@ -49,6 +51,14 @@ export async function PUT(
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
 
+  const rl = checkRateLimit(`target-groups:${session.user.id}`, 30);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Zu viele Anfragen. Bitte warte kurz." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
+
   const { id } = await params;
   const brain = await ensureOwnership(session.user.id, id);
   if (!brain) return NextResponse.json({ error: "Nicht gefunden" }, { status: 404 });
@@ -81,6 +91,14 @@ export async function DELETE(
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
+
+  const rl = checkRateLimit(`target-groups:${session.user.id}`, 30);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Zu viele Anfragen. Bitte warte kurz." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
 
   const { id } = await params;
   const brain = await ensureOwnership(session.user.id, id);

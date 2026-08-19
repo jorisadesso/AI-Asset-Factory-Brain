@@ -2,64 +2,126 @@
 
 import { signOut } from "next-auth/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { SECTION_CONFIGS } from "@/types";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { BrainLogo } from "@/components/BrainLogo";
+
+function AdessoLogo({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="20 11 107 40"
+      className={className}
+      aria-label="adesso"
+      role="img"
+    >
+      <path
+        fill="white"
+        d="M26.8218,20.5164a22.0835,22.0835,0,0,0-5.8081.8l.521,3.2343A23.6564,23.6564,0,0,1,26.23,24.029c2.7134,0,3.2353.4737,3.2353,2.3526v.87H25.1929c-3.4434,0-4.7354,2.4121-4.7354,5.8545,0,2.9228,1.32,5.0439,4.4165,5.0439a9.2611,9.2611,0,0,0,5.043-1.4961l.3418,1.2754H33.708V26.6374C33.708,22.3943,32.1426,20.5164,26.8218,20.5164Zm2.6435,13.39a7.8689,7.8689,0,0,1-3.332,1.15c-1.8359.0674-1.7944-1.7149-1.7944-2.8975,0-1.2861.6045-1.6894,1.9956-1.6894h3.1308Zm17.816-12.8926a23.5514,23.5514,0,0,0-4.5694-.4922c-3.97,0-5.6572,2.0605-5.6572,5.8554v5.835c0,3.9,1.8271,5.9385,5.2705,5.9385a9.0085,9.0085,0,0,0,5.4136-1.793l.46,1.5723h3.37v-24.46l-4.2871.5977Zm0,11.9355A6.0628,6.0628,0,0,1,43.45,34.4958c-1.5811,0-2.1084-.7735-2.1084-2.18V26.2712c0-1.5459.5972-2.0957,2.144-2.0957a19.0043,19.0043,0,0,1,3.7955.457Zm60.6943-12.4348c-5.8086,0-7.3731,3.2-7.3731,6.6787v4.2784c0,3.4794,1.5645,6.68,7.3731,6.68,5.8105,0,7.376-3.2,7.376-6.68V27.1928C115.3516,23.7143,113.7861,20.5141,107.9756,20.5141ZM111.1084,31.61c0,1.9141-.8711,2.9239-3.1328,2.9239-2.2588,0-3.1289-1.01-3.1289-2.9239V27.0532c0-1.9131.87-2.9219,3.1289-2.9219,2.2617,0,3.1328,1.0088,3.1328,2.9219ZM77.8242,27.4843c-2.3144-.4824-2.4228-.581-2.4873-1.9326-.0488-1.04.2422-1.4707,2.0791-1.5566a29.8038,29.8038,0,0,1,4.669.2656l.2558-3.3818a22.2487,22.2487,0,0,0-5.0879-.3506c-4.8164.2275-6.2383,1.7881-6.0781,5.1855.1543,3.2578.6875,4.2754,4.86,5.085,2.7685.5293,3.0009,1.0391,3.0517,2.08.0606,1.2832-.1973,1.7119-2.07,1.8008a18.9013,18.9013,0,0,1-5.0586-.4913l-.4385,3.251a19.874,19.874,0,0,0,5.8682.6963c5.0967-.2412,6.0078-2.2978,5.8535-5.5566C83.0771,29.1123,82.5967,28.51,77.8242,27.4843Zm14.8194,0c-2.3145-.4814-2.4239-.58-2.4883-1.9316-.0489-1.04.2441-1.4717,2.08-1.5576a29.776,29.776,0,0,1,4.6679.2656l.2578-3.3808a22.2081,22.2081,0,0,0-5.0879-.3516c-4.8183.2275-6.2382,1.7891-6.0781,5.1855.1543,3.2578.6875,4.2754,4.8594,5.086,2.7685.5293,3.0019,1.039,3.0508,2.0791.0605,1.2832-.1973,1.7129-2.0684,1.8008a18.9194,18.9194,0,0,1-5.0605-.4913l-.4375,3.251a19.9137,19.9137,0,0,0,5.8691.6973c5.0947-.2422,6.0059-2.2988,5.8525-5.5567C97.8955,29.1132,97.417,28.5107,92.6436,27.4843Zm-30.7-6.9775c-5.4282,0-7.0283,3.0273-7.0283,6.6113v4.4893c0,4.0713,1.8443,6.541,7.167,6.541a14.7822,14.7822,0,0,0,5.6187-.918l.45-3.1757a15.3126,15.3126,0,0,1-5.6265.791c-2.5615-.2559-3.3643-.9766-3.3643-3.0293v-.87h9.4283V27.3271C68.5889,23.6728,67.3711,20.5068,61.9438,20.5068Zm2.6094,7.0293H59.1606v-.835c0-1.6015.73-2.7148,2.8184-2.7148s2.5742,1.1133,2.5742,2.7148Z"
+      />
+      <polygon
+        fill="white"
+        points="126.435 11.012 124.852 11.012 124.852 40.397 114.677 50.573 116.915 50.573 126.435 41.052 126.435 11.012"
+      />
+    </svg>
+  );
+}
 
 export function DashboardNav({ userName }: { userName: string }) {
-  const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileMenuOpen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileMenuOpen]);
+
+  const initials = userName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <header className="bg-[#1B7FD4] sticky top-0 z-10">
+      <div className="px-6 lg:px-10">
+        <div className="flex items-center justify-between h-14">
+          {/* Hamburger — mobile only */}
+          <button
+            onClick={() => setMobileMenuOpen((v) => !v)}
+            className="md:hidden flex items-center justify-center w-11 h-11 -ml-2 mr-1 rounded-lg hover:bg-white/10 transition"
+            aria-label={mobileMenuOpen ? "Menü schließen" : "Menü"}
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? (
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M5 5L15 15M15 5L5 15" stroke="white" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M3 6h14M3 10h14M3 14h14" stroke="white" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            )}
+          </button>
+
+          {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
-              AI
-            </div>
-            <span className="font-semibold text-gray-900 hidden sm:block">
+            <AdessoLogo className="h-7 w-auto" />
+            <span className="w-px h-5 bg-white/30 hidden sm:block" />
+            <BrainLogo variant="white" id="nav" className="h-7 w-auto hidden sm:block" />
+            <span className="text-white font-bold text-sm hidden sm:block tracking-tight">
               AI Asset Factory Brain
             </span>
           </Link>
 
-          <nav className="flex items-center gap-1">
-            <NavLink href="/dashboard" active={pathname === "/dashboard"}>
-              Dashboard
-            </NavLink>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500 hidden sm:block">{userName}</span>
+          {/* Right side */}
+          <div className="flex items-center gap-2 ml-auto">
+            <ThemeToggle />
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="text-sm text-gray-500 hover:text-gray-700 transition px-3 py-1.5 rounded-lg hover:bg-gray-100"
+              className="text-xs text-white/70 hover:text-white transition border border-white/30 hover:border-white/60 px-3 py-1.5 rounded-full uppercase tracking-wider font-medium"
             >
               Abmelden
             </button>
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-bold">
+              {initials}
+            </div>
           </div>
         </div>
       </div>
-    </header>
-  );
-}
 
-function NavLink({
-  href,
-  active,
-  children,
-}: {
-  href: string;
-  active: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
-        active
-          ? "bg-blue-50 text-blue-700"
-          : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-      }`}
-    >
-      {children}
-    </Link>
+      {/* Mobile slide-down menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-[#1569B8] border-t border-white/10 px-4 pb-4">
+          <Link
+            href="/dashboard"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2.5 text-white/80 hover:text-white text-sm font-medium border-b border-white/10"
+          >
+            Dashboard
+          </Link>
+          {SECTION_CONFIGS.map((config, i) => (
+            <Link
+              key={config.type}
+              href={`/brain/${config.type.toLowerCase()}`}
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 py-2.5 text-white/70 hover:text-white text-sm border-b border-white/10"
+            >
+              <span className="text-white/40 font-mono text-xs w-5">{String(i + 1).padStart(2, "0")}</span>
+              {config.label}
+            </Link>
+          ))}
+          <Link
+            href="/knowledge"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2.5 text-white/80 hover:text-white text-sm font-medium mt-1"
+          >
+            Wissensbasis
+          </Link>
+        </div>
+      )}
+    </header>
   );
 }

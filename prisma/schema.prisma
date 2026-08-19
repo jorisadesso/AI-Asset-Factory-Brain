@@ -8,39 +8,13 @@ datasource db {
 }
 
 model User {
-  id             String         @id @default(cuid())
-  email          String         @unique
-  name           String?
-  passwordHash   String
-  role           String         @default("OWNER")
-  organizationId String?
-  organization   Organization?  @relation(fields: [organizationId], references: [id])
-  brains         Brain[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-}
-
-model Organization {
-  id          String       @id @default(cuid())
-  name        String
-  users       User[]
-  brains      Brain[]
-  invitations Invitation[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-}
-
-model Invitation {
-  id             String       @id @default(cuid())
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  email          String?
-  token          String       @unique @default(cuid())
-  role           String       @default("EDITOR")
-  expiresAt      DateTime
-  usedAt         DateTime?
-  createdById    String
-  createdAt      DateTime     @default(now())
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  brains       Brain[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Brain {
@@ -48,8 +22,6 @@ model Brain {
   name            String             @default("Mein AI Asset Factory Brain")
   userId          String
   user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organizationId  String?
-  organization    Organization?      @relation(fields: [organizationId], references: [id])
   sections        BrainSection[]
   productCategories ProductCategory[]
   targetGroups    TargetGroup[]

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 import { getBrainForUser } from "@/lib/db/brain";
+import { checkRateLimit } from "@/lib/api/rateLimit";
 import { z } from "zod";
 import { generateTargetGroupsMarkdown } from "@/lib/knowledge/generator";
 
@@ -12,10 +13,6 @@ const groupSchema = z.object({
   description: z.string().optional(),
   personas: z.array(z.object({ description: z.string() })),
 });
-
-async function getBrain(userId: string) {
-  return getBrainForUser(userId);
-}
 
 async function regenerateMarkdown(brainId: string) {
   const groups = await prisma.targetGroup.findMany({
@@ -42,7 +39,7 @@ export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
 
-  const brain = await getBrain(session.user.id);
+  const brain = await getBrainForUser(session.user.id);
   if (!brain) return NextResponse.json([]);
 
   const groups = await prisma.targetGroup.findMany({
@@ -60,11 +57,19 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Nicht angemeldet" }, { status: 401 });
 
+  const rl = checkRateLimit(`target-groups:${session.user.id}`, 30);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Zu viele Anfragen. Bitte warte kurz." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
+
   const body = await req.json() as unknown;
   const parsed = groupSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Ungültige Daten" }, { status: 400 });
 
-  const brain = await getBrain(session.user.id);
+  const brain = await getBrainForUser(session.user.id);
   if (!brain) return NextResponse.json({ error: "Brain nicht gefunden" }, { status: 404 });
 
   const count = await prisma.targetGroup.count({ where: { brainId: brain.id } });

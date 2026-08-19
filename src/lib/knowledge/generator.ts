@@ -272,18 +272,7 @@ export function calculateCompletionScore(
   answers: Record<string, string>,
   dynamicCount?: number
 ): number {
-  const requiredFields: Record<SectionType, string[]> = {
-    COMPANY: ["company_name", "company_description", "mission", "vision", "values"],
-    PRODUCT_CATEGORIES: [],
-    TARGET_GROUPS: [],
-    BRAND_LANGUAGE: ["brand_perception", "communication_style", "salutation", "forbidden_terms"],
-    MARKETING_CONTENT: ["content_goals", "content_formats", "key_messages"],
-    SALES: ["selling_points", "customer_benefits"],
-    LEGAL_COMPLIANCE: ["legal_requirements", "forbidden_statements"],
-    EXISTING_CONTENT: ["content_sources"],
-    VISUAL_GUIDELINES: ["visual_style", "preferred_motifs", "forbidden_styles"],
-    AI_RULES: ["always_consider", "conflict_handling"],
-  };
+  const { SECTION_CONFIGS } = require("@/types") as typeof import("@/types");
 
   const dynamicSections: SectionType[] = ["PRODUCT_CATEGORIES", "TARGET_GROUPS"];
 
@@ -292,14 +281,15 @@ export function calculateCompletionScore(
     return Math.min(1, dynamicCount / 2);
   }
 
-  const required = requiredFields[sectionType] ?? [];
-  if (required.length === 0) return 0;
+  const config = SECTION_CONFIGS.find((c) => c.type === sectionType);
+  const questions = config?.questions ?? [];
+  if (questions.length === 0) return 0;
 
   let filled = 0;
-  for (const field of required) {
-    const value = answers[field];
-    if (value && value.trim().length > 5) filled++;
+  for (const q of questions) {
+    const value = answers[q.key];
+    if (value && value.trim().length > 0) filled++;
   }
 
-  return filled / required.length;
+  return filled / questions.length;
 }

@@ -1,19 +1,250 @@
 @import "tailwindcss";
 
+/* Dark mode via .dark class on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Design tokens — use these in new components instead of hardcoded colors ─
+   Light values are the source of truth; .dark overrides follow the same names.
+   Usage: style={{ color: "var(--text-primary)" }}  or  @apply (arbitrary Tailwind)
+   Gradually replace globals.css !important overrides with these variables.     */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --surface-page:    #f9fafb;
+  --surface-card:    #ffffff;
+  --surface-raised:  #f3f4f6;
+  --surface-input:   #f9fafb;
+
+  /* Text */
+  --text-primary:    #111827;
+  --text-secondary:  #374151;
+  --text-muted:      #6b7280;
+  --text-faint:      #9ca3af;
+
+  /* Borders */
+  --border:          #e5e7eb;
+  --border-subtle:   #f3f4f6;
+
+  /* Accent (adesso blue) */
+  --accent:          #1B7FD4;
+  --accent-hover:    #1569B8;
+  --accent-light:    #EFF6FF;
+  --accent-text:     #1569B8;
+
+  /* Legacy compat — used by body */
+  --background: #f9fafb;
+  --foreground: #111827;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --surface-page:    #0f172a;
+  --surface-card:    #1e293b;
+  --surface-raised:  #334155;
+  --surface-input:   #0f172a;
+
+  --text-primary:    #f1f5f9;
+  --text-secondary:  #cbd5e1;
+  --text-muted:      #94a3b8;
+  --text-faint:      #64748b;
+
+  --border:          #334155;
+  --border-subtle:   #1e293b;
+
+  --accent:          #60a5fa;
+  --accent-hover:    #93c5fd;
+  --accent-light:    rgba(59, 130, 246, 0.15);
+  --accent-text:     #93c5fd;
+
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  color-scheme: dark;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ── Dark mode surface overrides ────────────────────────────── */
+
+/* Backgrounds — layered dark palette:
+   page bg:       #0f172a  (bg-gray-50)
+   card/panel bg: #1e293b  (bg-white)
+   elevated/track: #334155 (bg-gray-100)  ← visible against card bg
+*/
+.dark .bg-white          { background-color: #1e293b !important; }
+.dark .bg-gray-50        { background-color: #0f172a !important; }
+.dark .bg-gray-100       { background-color: #334155 !important; }  /* was #1e293b — progress tracks now visible */
+.dark .hover\:bg-gray-50:hover   { background-color: #1e293b !important; }
+.dark .hover\:bg-gray-100:hover  { background-color: #475569 !important; }
+.dark .hover\:bg-gray-200:hover  { background-color: #475569 !important; }
+.dark .hover\:shadow-md:hover    { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.5) !important; }
+
+/* Text — readable contrast on dark surfaces */
+.dark .text-gray-900     { color: #f1f5f9 !important; }
+.dark .text-gray-800     { color: #e2e8f0 !important; }
+.dark .text-gray-700     { color: #cbd5e1 !important; }
+.dark .text-gray-600     { color: #94a3b8 !important; }
+.dark .text-gray-500     { color: #64748b !important; }
+.dark .text-gray-400     { color: #94a3b8 !important; }  /* raised so icons/dim text are visible */
+.dark .text-gray-300     { color: #64748b !important; }
+
+/* Blue accent text — lightened for dark backgrounds */
+.dark .text-\[\#1B7FD4\]  { color: #60a5fa !important; }
+.dark .text-\[\#1B5EA8\]  { color: #93c5fd !important; }
+.dark .text-\[\#1569B8\]  { color: #60a5fa !important; }
+/* Dark navy — unreadable on dark background (e.g. nudge banner title) */
+.dark .text-\[\#1e3a5f\]  { color: #f1f5f9 !important; }
+.dark .text-blue-600      { color: #60a5fa !important; }
+.dark .text-blue-700      { color: #93c5fd !important; }
+.dark .hover\:text-\[\#1B7FD4\]:hover  { color: #93c5fd !important; }
+.dark .hover\:text-\[\#1569B8\]:hover  { color: #bfdbfe !important; }
+.dark .hover\:text-blue-700:hover      { color: #93c5fd !important; }
+.dark .group:hover .group-hover\:text-\[\#1B7FD4\] { color: #60a5fa !important; }
+.dark .group:hover .group-hover\:text-\[\#5AABF0\] { color: #93c5fd !important; }
+.dark .group:hover .group-hover\:text-gray-700 { color: #e2e8f0 !important; }
+.dark .group:hover .group-hover\:text-gray-900 { color: #f1f5f9 !important; }
+
+/* Borders */
+.dark .border-gray-200   { border-color: #334155 !important; }
+.dark .border-gray-100   { border-color: #1e293b !important; }
+.dark .divide-gray-100 > * + * { border-color: #1e293b !important; }
+.dark .hover\:border-\[\#93C5FD\]:hover { border-color: #3b82f6 !important; }
+.dark .hover\:border-\[\#1B7FD4\]:hover { border-color: #60a5fa !important; }
+.dark .hover\:border-l-\[\#1B7FD4\]:hover { border-left-color: #60a5fa !important; }
+
+/* Inputs / Textareas */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder { color: #475569 !important; }
+.dark input:focus,
+.dark textarea:focus { border-color: #3b82f6 !important; }
+
+/* Autofill */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #0f172a inset;
+  -webkit-text-fill-color: #e2e8f0;
+}
+
+/* Shadows */
+.dark .shadow-sm  { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.4) !important; }
+.dark .shadow-2xl { box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.6) !important; }
+
+/* ── Blue light backgrounds → visible dark equivalents ───────── */
+/* Active sidebar row / breadcrumb chip: subtle blue tint, clearly distinct from card bg #1e293b */
+.dark .bg-\[\#EFF6FF\]            { background-color: rgba(59, 130, 246, 0.15) !important; }
+/* Active icon box / link pill: vivid dark blue, clearly active */
+.dark .bg-\[\#DBEAFE\]            { background-color: #1e3a8a !important; }
+.dark .bg-blue-50                  { background-color: rgba(59, 130, 246, 0.10) !important; }
+.dark .text-blue-700               { color: #93c5fd !important; }
+/* Hover variants */
+.dark .hover\:bg-\[\#EFF6FF\]:hover  { background-color: rgba(59, 130, 246, 0.20) !important; }
+.dark .hover\:bg-\[\#DBEAFE\]:hover  { background-color: #253e6e !important; }
+.dark .hover\:bg-blue-50:hover       { background-color: rgba(59, 130, 246, 0.15) !important; }
+/* Group-hover variants */
+.dark .group:hover .group-hover\:bg-\[\#EFF6FF\] { background-color: rgba(59, 130, 246, 0.18) !important; }
+.dark .group:hover .group-hover\:bg-\[\#DBEAFE\] { background-color: #253e6e !important; }
+
+/* Border accent */
+.dark .border-\[\#BFDBFE\]   { border-color: #334155 !important; }
+.dark .border-l-\[\#1B7FD4\] { border-left-color: #3b82f6 !important; }
+.dark .border-blue-200       { border-color: #1e3a8a !important; }
+
+/* ── Dark mode gradient: orange→blue becomes pink→blue ────────── */
+.dark .from-\[\#E8956D\] {
+  --tw-gradient-from: #FDA4AF !important;
+}
+.dark .to-\[\#1B7FD4\] {
+  --tw-gradient-to: #3b82f6 !important;
+}
+
+/* Sidebar uses CSS variables — no override needed */
+
+/* ── Yellow/amber tip box — warm glow on dark background ────────
+   Pattern: translucent yellow bg + gold border + warm light text
+   (same as VS Code / GitHub dark-mode info boxes)             */
+.dark .bg-amber-50       { background-color: rgba(234, 179, 8, 0.10) !important; }
+.dark .border-amber-100  { border-color: rgba(234, 179, 8, 0.30) !important; }
+.dark .text-amber-800    { color: #fde68a !important; }
+.dark .text-amber-500    { color: #fbbf24 !important; }
+/* Yellow variants (used by tip hint box) */
+.dark .bg-yellow-50      { background-color: rgba(234, 179, 8, 0.10) !important; }
+.dark .border-yellow-200 { border-color: rgba(234, 179, 8, 0.30) !important; }
+.dark .text-yellow-700   { color: #fde68a !important; }
+.dark .text-yellow-400   { color: #fbbf24 !important; }
+
+/* ── ContentBird logo button — white bg in dark mode so SVG stays readable ── */
+.dark .contentbird-btn {
+  background-color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+.dark .contentbird-btn:hover { background-color: #f3f4f6 !important; }
+
+/* ── Status chips / badges ────────────────────────────────────── */
+.dark .bg-red-50    { background-color: #2d1515 !important; }
+.dark .bg-green-50  { background-color: #0d2d1a !important; }
+.dark .text-red-800    { color: #fca5a5 !important; }
+.dark .text-amber-800  { color: #fcd34d !important; }
+.dark .text-green-800  { color: #86efac !important; }
+.dark .border-red-200   { border-color: rgba(127, 29, 29, 0.5) !important; }
+.dark .border-amber-200 { border-color: rgba(120, 53, 15, 0.5) !important; }
+.dark .hover\:bg-red-100:hover    { background-color: #3d1a1a !important; }
+.dark .hover\:bg-amber-100:hover  { background-color: #3d2a10 !important; }
+
+/* ── Code/pre blocks ──────────────────────────────────────────── */
+.dark pre { background-color: #0f172a !important; color: #e2e8f0 !important; }
+
+/* ── Disabled button — solid gray in dark mode ────────────────── */
+.dark .disabled\:bg-gray-200:disabled { background-color: #334155 !important; }
+.dark .disabled\:text-gray-400:disabled { color: #94a3b8 !important; }
+
+/* ── Hero CTA button — white text in dark mode ────────────────── */
+.dark .hero-cta-btn { color: #ffffff !important; }
+
+/* Chat Widget uses CSS variables — no overrides needed */
+
+/* ── Auth pages — always light, never follow dark mode ──────────── */
+.dark .auth-light                              { color: #111827 !important; }
+.dark .auth-light.min-h-screen                { background-color: #f9fafb !important; }
+.dark .auth-light .bg-gray-50                  { background-color: #f9fafb !important; }
+.dark .auth-light .bg-white                    { background-color: #ffffff !important; }
+.dark .auth-light .border-gray-200             { border-color: #e5e7eb !important; }
+.dark .auth-light .text-gray-900               { color: #111827 !important; }
+.dark .auth-light .text-gray-700               { color: #374151 !important; }
+.dark .auth-light .text-gray-600               { color: #4b5563 !important; }
+.dark .auth-light .text-gray-500               { color: #6b7280 !important; }
+.dark .auth-light .text-gray-400               { color: #9ca3af !important; }
+.dark .auth-light .shadow-sm                   { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important; }
+.dark .auth-light .bg-gray-200                 { background-color: #e5e7eb !important; }
+.dark .auth-light input,
+.dark .auth-light textarea,
+.dark .auth-light select {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+  border-color: #e5e7eb !important;
+}
+.dark .auth-light input::placeholder,
+.dark .auth-light textarea::placeholder { color: #9ca3af !important; }
+.dark .auth-light input:focus,
+.dark .auth-light textarea:focus { border-color: #1B7FD4 !important; }
+/* Keep original orange→blue gradient on auth pages (class is on the auth-light element itself) */
+.dark .auth-light.from-\[\#E8956D\],
+.dark .auth-light .from-\[\#E8956D\] { --tw-gradient-from: #E8956D !important; }
+.dark .auth-light.to-\[\#1B7FD4\],
+.dark .auth-light .to-\[\#1B7FD4\]   { --tw-gradient-to:   #1B7FD4 !important; }
+
+/* Hide browser-injected autofill credential buttons */
+input::-webkit-credentials-auto-fill-button,
+input::-webkit-contacts-auto-fill-button {
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
 }

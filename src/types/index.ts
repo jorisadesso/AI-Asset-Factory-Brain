@@ -174,18 +174,114 @@ export const SECTION_CONFIGS: SectionConfig[] = [
     label: "Produkt- und Dienstleistungskategorien",
     description: "Ihre Produkte und Dienstleistungen strukturiert erfassen",
     icon: "Package",
-    questions: [],
-    hasDynamicItems: true,
     hasUpload: true,
+    questions: [
+      {
+        key: "product_overview",
+        label: "Welche Produkte und Dienstleistungskategorien bieten Sie an?",
+        type: "textarea",
+        required: true,
+        placeholder: "z.B. CRM-Software, Beratungsleistungen, Support-Pakete …",
+        examples: [
+          "Wir bieten drei Produktlinien: Enterprise-CRM, Mid-Market-CRM und eine Self-Service-Lösung.",
+          "Unsere Dienstleistungen umfassen Implementierung, Training und laufenden Support.",
+        ],
+      },
+      {
+        key: "product_features",
+        label: "Was sind die wichtigsten Features und Funktionen Ihrer Produkte?",
+        type: "textarea",
+        placeholder: "z.B. KI-gestützte Auswertungen, nahtlose ERP-Integration, Mobile App …",
+        examples: [
+          "Automatische Lead-Bewertung, 360°-Kundenprofil, Workflow-Automatisierung.",
+        ],
+      },
+      {
+        key: "product_usps",
+        label: "Was sind Ihre zentralen USPs gegenüber dem Wettbewerb?",
+        type: "textarea",
+        placeholder: "z.B. Schnellste Implementierung am Markt, DSGVO-konform, Made in Germany …",
+        examples: [
+          "Go-Live in 6 Wochen statt 6 Monaten. Hosting ausschließlich auf deutschen Servern.",
+        ],
+      },
+      {
+        key: "product_use_cases",
+        label: "Für welche Branchen und Use Cases sind Ihre Angebote besonders geeignet?",
+        type: "textarea",
+        placeholder: "z.B. Maschinenbau, Finanzdienstleister, Onboarding neuer Kunden …",
+        examples: [
+          "Besonders stark im Mittelstand: Maschinen- und Anlagenbau, Großhandel, Versicherungen.",
+        ],
+      },
+      {
+        key: "product_pricing",
+        label: "Wie ist Ihr Preismodell aufgebaut?",
+        type: "textarea",
+        placeholder: "z.B. Lizenzmodell, SaaS-Abo, projektbasiert, Freemium …",
+        examples: [
+          "Monatliches Abo ab 99 €, skalierend nach Nutzeranzahl. Enterprise auf Anfrage.",
+        ],
+      },
+    ],
   },
   {
     type: "TARGET_GROUPS",
     label: "Zielgruppen",
     description: "Relevante Zielgruppen und Personas definieren",
     icon: "Users",
-    questions: [],
-    hasDynamicItems: true,
     hasUpload: true,
+    questions: [
+      {
+        key: "target_overview",
+        label: "Welche Zielgruppen sprechen Sie an?",
+        type: "textarea",
+        required: true,
+        placeholder: "z.B. IT-Entscheider im Mittelstand, Marketing-Manager in Konzernen …",
+        examples: [
+          "Primär: CIOs und IT-Leiter in Unternehmen mit 100–2.000 Mitarbeitern.",
+          "Sekundär: Vertriebsleiter und CRM-Administratoren.",
+        ],
+      },
+      {
+        key: "target_industries",
+        label: "In welchen Branchen und Unternehmensgrößen sind Ihre Hauptkunden?",
+        type: "textarea",
+        placeholder: "z.B. Produzierende Industrie, 50–500 Mitarbeiter, B2B …",
+        examples: [
+          "Schwerpunkt Mittelstand (50–500 MA) in DACH, Branchen: Industrie, Handel, Dienstleistung.",
+        ],
+      },
+      {
+        key: "target_pain_points",
+        label: "Welche Probleme und Herausforderungen hat Ihre Zielgruppe?",
+        type: "textarea",
+        placeholder: "z.B. Unübersichtliche Kundendaten, manueller Aufwand, fehlende Transparenz …",
+        examples: [
+          "Kundendaten verteilt auf Excel, E-Mail und Altsysteme. Kein einheitliches Reporting.",
+        ],
+      },
+      {
+        key: "target_personas",
+        label: "Beschreiben Sie Ihre wichtigsten Buyer Personas",
+        type: "textarea",
+        placeholder: "z.B. 'Thomas, 45, IT-Leiter, sucht Standardlösung mit schnellem ROI …'",
+        examples: [
+          "Petra, 42, Vertriebsleiterin: will Forecasts automatisieren und Abschlussquoten steigern.",
+          "Klaus, 55, Geschäftsführer: will Überblick über alle Kundenbeziehungen aus einer Ansicht.",
+        ],
+      },
+      {
+        key: "target_buying_triggers",
+        label: "Was sind die häufigsten Kaufauslöser und Entscheidungskriterien?",
+        type: "textarea",
+        placeholder: "z.B. Wachstumsschmerzen, gescheitertes ERP-Projekt, neuer Vertriebschef …",
+        examples: [
+          "Typische Trigger: Unternehmensübernahme, CRM-Ablösung, Skalierung des Vertriebs.",
+          "Entscheidend: Datenschutz, Integrationsfähigkeit, TCO über 3 Jahre.",
+        ],
+      },
+    ],
   },
   {
     type: "BRAND_LANGUAGE",

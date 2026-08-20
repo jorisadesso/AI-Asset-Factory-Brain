@@ -10,8 +10,6 @@ import {
 } from "lucide-react";
 import type { SectionConfig, SectionType } from "@/types";
 import { SECTION_CONFIGS } from "@/types";
-import { ProductCategoriesSection } from "@/components/sections/ProductCategoriesSection";
-import { TargetGroupsSection } from "@/components/sections/TargetGroupsSection";
 import { CrossSectionModal, type CrossSectionEntry } from "@/components/wizard/CrossSectionModal";
 
 interface SectionWizardProps {
@@ -291,7 +289,7 @@ export function SectionWizard({ config }: SectionWizardProps) {
   const configTypeRef = useRef(config.type);
 
   const isDirty = JSON.stringify(answers) !== JSON.stringify(savedAnswers);
-  const isDynamic = config.type === "PRODUCT_CATEGORIES" || config.type === "TARGET_GROUPS";
+  const isDynamic = false;
 
   const fetchBrain = useCallback(async () => {
     try {
@@ -591,8 +589,6 @@ export function SectionWizard({ config }: SectionWizardProps) {
       )}
 
       {/* Dynamic sections */}
-      {config.type === "PRODUCT_CATEGORIES" && <ProductCategoriesSection />}
-      {config.type === "TARGET_GROUPS" && <TargetGroupsSection />}
 
       {/* Branchenspezifische Compliance-Auswahl */}
       {config.type === "LEGAL_COMPLIANCE" && (

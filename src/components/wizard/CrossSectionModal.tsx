@@ -96,7 +96,7 @@ export function CrossSectionModal({ crossSections, onClose, onApplied, checkedSe
         </div>
 
         {/* Sections list — only sections with found content */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-1">
+        <div className="overflow-y-auto p-3 space-y-1 max-h-[55vh]">
           {crossSections.map((entry) => {
             const sectionConfig = SECTION_CONFIGS.find((s) => s.type === entry.sectionType);
             const isSelected = selected.has(entry.sectionType);

@@ -45,8 +45,9 @@ COPY --from=deps /app/node_modules ./node_modules
 # Regenerate Prisma client for the correct Linux platform
 RUN node node_modules/prisma/build/index.js generate
 
-# Copy startup script
+# Copy startup scripts
 COPY --chown=nextjs:nodejs scripts/start.sh ./start.sh
+COPY --chown=nextjs:nodejs scripts/seed-admin.js ./scripts/seed-admin.js
 RUN chmod +x ./start.sh
 
 # Data directory for SQLite (mount a volume here)

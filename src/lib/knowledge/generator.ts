@@ -229,6 +229,26 @@ function normalizeListFields(data: Record<string, unknown>, keys: string[]): Rec
   return result;
 }
 
+function generateSectionFromAnswers(
+  sectionType: SectionType,
+  sectionLabel: string,
+  answers: Record<string, string>
+): string {
+  const { SECTION_CONFIGS } = require("@/types") as typeof import("@/types");
+  const config = SECTION_CONFIGS.find((c) => c.type === sectionType);
+  const questions = config?.questions ?? [];
+
+  const filled = questions.filter((q) => answers[q.key]?.trim());
+  if (filled.length === 0) return `# ${sectionLabel}\n\n*Noch keine Informationen erfasst.*\n`;
+
+  const lines: string[] = [`# ${sectionLabel}\n`];
+  for (const q of filled) {
+    lines.push(`## ${q.label}\n`);
+    lines.push(`${answers[q.key].trim()}\n`);
+  }
+  return lines.join("\n");
+}
+
 export function generateMarkdownForSection(
   sectionType: SectionType,
   data: Record<string, unknown>,
@@ -241,9 +261,9 @@ export function generateMarkdownForSection(
     case "COMPANY":
       return generateCompanyMarkdown(normalizeListFields(data, ["values"]) as CompanyData);
     case "PRODUCT_CATEGORIES":
-      return generateProductCategoriesMarkdown(dynamicData?.productCategories ?? []);
+      return generateSectionFromAnswers("PRODUCT_CATEGORIES", "Produkt- und Dienstleistungskategorien", data as Record<string, string>);
     case "TARGET_GROUPS":
-      return generateTargetGroupsMarkdown(dynamicData?.targetGroups ?? []);
+      return generateSectionFromAnswers("TARGET_GROUPS", "Zielgruppen", data as Record<string, string>);
     case "BRAND_LANGUAGE":
       return generateBrandLanguageMarkdown(data as BrandLanguageData);
     case "MARKETING_CONTENT":
@@ -273,13 +293,6 @@ export function calculateCompletionScore(
   dynamicCount?: number
 ): number {
   const { SECTION_CONFIGS } = require("@/types") as typeof import("@/types");
-
-  const dynamicSections: SectionType[] = ["PRODUCT_CATEGORIES", "TARGET_GROUPS"];
-
-  if (dynamicSections.includes(sectionType)) {
-    if (!dynamicCount || dynamicCount === 0) return 0;
-    return Math.min(1, dynamicCount / 2);
-  }
 
   const config = SECTION_CONFIGS.find((c) => c.type === sectionType);
   const questions = config?.questions ?? [];

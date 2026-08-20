@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Loader2, CheckCircle } from "lucide-react"; // CheckCircle used in footer done-state
 import { SECTION_CONFIGS } from "@/types";
 
@@ -73,12 +74,11 @@ export function CrossSectionModal({ crossSections, onClose, onApplied, checkedSe
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50">
-      {/* Backdrop — separate layer so blur covers full screen */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-      <div className="relative h-full flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
+  const modal = (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop extends 16px beyond viewport so blur edge is never visible */}
+      <div className="fixed bg-black/40 backdrop-blur-sm" style={{ inset: "-16px" }} />
+      <div className="relative z-10 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-start justify-between p-5 border-b border-gray-100">
           <div>
@@ -96,7 +96,7 @@ export function CrossSectionModal({ crossSections, onClose, onApplied, checkedSe
         </div>
 
         {/* Sections list — only sections with found content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        <div className="flex-1 overflow-y-auto p-3 space-y-1">
           {crossSections.map((entry) => {
             const sectionConfig = SECTION_CONFIGS.find((s) => s.type === entry.sectionType);
             const isSelected = selected.has(entry.sectionType);
@@ -185,7 +185,8 @@ export function CrossSectionModal({ crossSections, onClose, onApplied, checkedSe
           </div>
         </div>
       </div>
-      </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
